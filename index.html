@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+</head>
+<body>
+  <div id="chart" style="width:100%; max-width:700px;"></div>
+
+  <script>
+    var firebaseConfig = { 
+    apiKey: "AIzaSyA1TjtWQ4dOu1JncoXAqn4JlK20hNaBHD0",
+    authDomain: "radiodish-7f55c.firebaseapp.com",
+    databaseURL: "https://radiodish-7f55c-default-rtdb.firebaseio.com",
+    projectId: "radiodish-7f55c",
+    storageBucket: "radiodish-7f55c.appspot.com",
+    messagingSenderId: "1095969300005",
+    appId: "1:1095969300005:web:d572582aeb98643d1769cc",
+    measurementId: "G-F904J56747"
+    };
+    firebase.initializeApp(firebaseConfig);
+    
+    var database = firebase.database();
+    
+    // Initialize plot data arrays
+    var xData = [];
+    var yData = [];
+
+    // Create initial plot with empty data
+    
+
+    var cnt = 0;
+    
+    // Function to update the plot
+    function updatePlot() {
+      // Get current time
+      //Plotly.deleteTraces(graphDiv, 0);
+      var currentTime = new Date();
+      var timeString = currentTime.getHours() + ":" + currentTime.getMinutes() + ":" + currentTime.getSeconds();
+      
+      // Update xData and yData with new values
+      xData.push(timeString);
+      database.ref('Voltage').once('value', function(snapshot) {
+        var fb_data1 = snapshot.val();
+        yData.push(fb_data1);
+        console.log(xData);
+        console.log(yData);
+        Plotly.newPlot('chart', [{
+          x: xData,
+          y: yData,
+          type: 'scatter',
+          mode: 'lines+markers',
+          marker: {color: 'red'}
+         }], {
+          margin: { t: 0 }
+        });
+       
+       // Plotly.purge('chart');//Clear previous plot
+        // Update the plotly chart with new data
+       /* Plotly.extendTraces('chart', {
+          x: [xData],
+          y: [yData]}, [0]); */
+        cnt++;
+        // Limit number of points shown to 500
+        if(cnt > 500) {
+          Plotly.relayout('chart', {
+            xaxis: { range: [cnt - 500, cnt] }
+          });
+        } 
+      });
+    }
+
+    // Call updatePlot function every 1500 ms
+    setInterval(updatePlot, 100);
+  </script>
+</body>
+</html>
